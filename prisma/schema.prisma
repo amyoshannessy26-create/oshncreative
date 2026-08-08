@@ -1,0 +1,279 @@
+// Prisma schema for the VA Business Dashboard
+// Postgres (Neon) via DATABASE_URL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ---------- Auth.js (NextAuth) models ----------
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+
+  accounts    Account[]
+  sessions    Session[]
+  connections IntegrationConnection[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ---------- Integrations: encrypted OAuth token storage ----------
+
+enum IntegrationProvider {
+  GOOGLE
+  XERO
+}
+
+// Access/refresh tokens are stored AES-256-GCM encrypted (see src/lib/crypto.ts).
+// Never expose these fields to the client.
+model IntegrationConnection {
+  id                String              @id @default(cuid())
+  userId            String
+  provider          IntegrationProvider
+  accessTokenEnc    String              @db.Text
+  refreshTokenEnc   String?             @db.Text
+  expiresAt         DateTime?
+  scope             String?
+  // Xero: tenant (organisation) id. Google: selected Drive folder id filter.
+  externalId        String?
+  metadata          Json?
+  connectedAt       DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, provider])
+}
+
+// ---------- Core business modules ----------
+
+enum ClientStatus {
+  ACTIVE
+  PAUSED
+  OFFBOARDED
+}
+
+model Client {
+  id             String       @id @default(cuid())
+  name           String
+  company        String?
+  email          String?
+  retainerHours  Float        @default(0)
+  status         ClientStatus @default(ACTIVE)
+
+  tasks          Task[]
+  notes          Note[]
+  invoices       Invoice[]
+  docs           Doc[]
+  capacityEntries CapacityEntry[]
+  leads          Lead[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum LeadStage {
+  NEW_LEAD
+  DISCOVERY_CALL
+  PROPOSAL_SENT
+  ONBOARDING
+  ACTIVE
+  LOST
+}
+
+model Lead {
+  id        String    @id @default(cuid())
+  name      String
+  company   String?
+  email     String?
+  stage     LeadStage @default(NEW_LEAD)
+  value     Float?
+  notes     String?   @db.Text
+
+  clientId  String?
+  client    Client?   @relation(fields: [clientId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+model Task {
+  id       String       @id @default(cuid())
+  title    String
+  dueDate  DateTime?
+  priority TaskPriority @default(MEDIUM)
+  status   TaskStatus   @default(TODO)
+
+  clientId String?
+  client   Client?      @relation(fields: [clientId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Note {
+  id       String   @id @default(cuid())
+  body     String   @db.Text
+
+  clientId String?
+  client   Client?  @relation(fields: [clientId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SUBMITTED
+  AUTHORISED
+  PAID
+  VOIDED
+  OVERDUE
+}
+
+model Invoice {
+  id            String        @id @default(cuid())
+  // Xero invoice ID for sync de-duplication; null for manually entered invoices.
+  xeroInvoiceId String?       @unique
+  amount        Float
+  status        InvoiceStatus @default(DRAFT)
+  issuedDate    DateTime?
+  dueDate       DateTime?
+
+  clientId String?
+  client   Client? @relation(fields: [clientId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  description String
+  category    String
+  amount      Float
+  date        DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum DocSource {
+  MANUAL
+  GOOGLE_DRIVE
+}
+
+model Doc {
+  id           String    @id @default(cuid())
+  title        String
+  url          String
+  googleDocId  String?   @unique
+  folderId     String?
+  source       DocSource @default(MANUAL)
+
+  clientId String?
+  client   Client? @relation(fields: [clientId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum CapacitySource {
+  MANUAL
+  CALENDAR
+}
+
+// One row per client per ISO week. bookedHours can be manually set or
+// derived from synced Calendar events tagged to that client.
+model CapacityEntry {
+  id          String         @id @default(cuid())
+  weekStart   DateTime
+  bookedHours Float          @default(0)
+  source      CapacitySource @default(MANUAL)
+
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([clientId, weekStart])
+}
+
+// Weekly total capacity (hours available across all clients), editable by the VA.
+model CapacitySetting {
+  id             String @id @default(cuid())
+  hoursPerWeek   Float  @default(40)
+  updatedAt      DateTime @updatedAt
+}
+
+// Cached Google Calendar events for "Today's Schedule" + capacity roll-up.
+model CalendarEvent {
+  id            String   @id @default(cuid())
+  googleEventId String   @unique
+  title         String
+  start         DateTime
+  end           DateTime
+  clientId      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

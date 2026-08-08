@@ -1,0 +1,6 @@
+{
+  "crons": [
+    { "path": "/api/cron/xero-sync", "schedule": "*/20 * * * *" },
+    { "path": "/api/cron/google-sync", "schedule": "*/20 * * * *" }
+  ]
+}
