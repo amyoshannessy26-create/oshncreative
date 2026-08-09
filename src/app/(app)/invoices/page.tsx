@@ -26,7 +26,7 @@ export default async function InvoicesPage() {
     <div>
       <PageHeader
         title="Invoices"
-        description="Synced from Xero every 15–30 minutes, plus anything you add manually"
+        description="Synced from Xero once a day, plus anything you add manually"
       />
 
       <details className="mb-6 group">

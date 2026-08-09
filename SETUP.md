@@ -99,9 +99,15 @@ the spec — see step 7.
 
 ## 7. Scheduled syncs
 
-`vercel.json` already defines two cron jobs, every 20 minutes:
+`vercel.json` defines two cron jobs, once daily (early morning, Sydney time):
 - `/api/cron/xero-sync` — pulls invoices + payment status from Xero
 - `/api/cron/google-sync` — pulls Drive docs + Calendar events
+
+Once a day is a Vercel **Hobby** (free) plan limit — the original spec asked
+for every 15–30 min, which needs a paid Vercel plan to run via Vercel Cron
+specifically. If you want closer-to-live syncing without upgrading Vercel,
+ask and a free GitHub Actions–based scheduler can call these same routes
+every 20 minutes instead.
 
 Both routes check `Authorization: Bearer $CRON_SECRET`, which Vercel sends
 automatically once `CRON_SECRET` is set as an environment variable — generate

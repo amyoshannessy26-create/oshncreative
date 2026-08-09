@@ -66,7 +66,7 @@ export default async function SettingsPage() {
             <div>
               <h2 className="text-sm font-semibold text-card-foreground">Xero</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Syncs invoices and payment status every 15–30 minutes, and rolls paid invoices into revenue this month.
+                Syncs invoices and payment status once a day, and rolls paid invoices into revenue this month.
               </p>
               {xero && <p className="mt-2 text-xs text-muted-foreground">Connected {format(xero.connectedAt, "d MMM yyyy")}</p>}
             </div>
