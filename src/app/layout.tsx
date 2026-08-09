@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Montserrat, Bodoni_Moda } from "next/font/google";
 import { brand, toCssVariables } from "../../config/brand";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Body font, per brand board.
+const montserrat = Montserrat({
+  variable: "--font-body",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+// Heading font. Stand-in for Bodoni FLF — see the comment in config/brand.ts.
+const bodoniModa = Bodoni_Moda({
+  variable: "--font-heading",
   subsets: ["latin"],
 });
 
@@ -23,7 +25,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       data-theme="light"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${montserrat.variable} ${bodoniModa.variable} h-full antialiased`}
     >
       <head>
         {/* Brand palette, single source of truth: config/brand.ts */}

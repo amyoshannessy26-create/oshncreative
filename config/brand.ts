@@ -18,23 +18,28 @@ export const brand = {
     height: 32,
   },
 
+  // Brand board, from Amy:
+  //   #BEC5A4 sage  ·  #D9D9D9 light grey  ·  #676663 warm charcoal
+  // success/warning/danger are functional UI states, not brand colors — kept
+  // standard (with success re-hued toward the brand sage) since they need to
+  // read unambiguously regardless of palette.
+  //
   // Light theme palette (HSL channel strings, no `hsl()` wrapper — lets us
   // apply alpha at the call site, e.g. `hsl(var(--brand-primary) / 0.1)`).
-  // Placeholder values — replace with real brand board colors.
   colors: {
     light: {
-      primary: "222 47% 24%", // deep navy
+      primary: "45 2% 40%", // #676663 warm charcoal
       primaryForeground: "0 0% 100%",
-      accent: "27 96% 61%", // warm accent
-      accentForeground: "222 47% 11%",
-      background: "0 0% 100%",
-      foreground: "222 47% 11%",
-      muted: "220 14% 96%",
-      mutedForeground: "220 9% 46%",
-      border: "220 13% 91%",
+      accent: "73 22% 71%", // #BEC5A4 sage
+      accentForeground: "45 2% 40%",
+      background: "0 0% 85%", // #D9D9D9 light grey — page canvas behind white cards
+      foreground: "45 2% 40%", // #676663
+      muted: "0 0% 91%",
+      mutedForeground: "45 3% 46%",
+      border: "0 0% 85%", // #D9D9D9
       card: "0 0% 100%",
-      cardForeground: "222 47% 11%",
-      success: "142 71% 35%",
+      cardForeground: "45 2% 40%",
+      success: "75 25% 32%", // deeper shade of the brand sage
       warning: "38 92% 50%",
       danger: "0 72% 51%",
     },
@@ -42,21 +47,32 @@ export const brand = {
     // enabling dark mode later is a data change, not a rewrite — see the
     // `[data-theme="dark"]` block generated in globals.css.
     dark: {
-      primary: "217 91% 70%",
-      primaryForeground: "222 47% 11%",
-      accent: "27 96% 61%",
-      accentForeground: "222 47% 11%",
-      background: "222 47% 8%",
-      foreground: "210 20% 98%",
-      muted: "217 33% 17%",
-      mutedForeground: "215 20% 65%",
-      border: "217 33% 20%",
-      card: "222 47% 11%",
-      cardForeground: "210 20% 98%",
-      success: "142 71% 45%",
+      primary: "45 3% 70%",
+      primaryForeground: "45 4% 12%",
+      accent: "73 25% 65%",
+      accentForeground: "45 4% 12%",
+      background: "45 4% 10%",
+      foreground: "0 0% 92%",
+      muted: "45 4% 16%",
+      mutedForeground: "0 0% 65%",
+      border: "45 4% 22%",
+      card: "45 4% 13%",
+      cardForeground: "0 0% 92%",
+      success: "75 28% 55%",
       warning: "38 92% 55%",
       danger: "0 72% 61%",
     },
+  },
+
+  // Bodoni FLF isn't distributed as a web font (no Google Fonts / CDN
+  // license), so headings render with Bodoni Moda — a Google Fonts variable
+  // serif in the same high-contrast Didone style — as a stand-in. Drop
+  // licensed Bodoni FLF .woff2 files in /public/fonts and swap the
+  // next/font/google call in src/app/layout.tsx for next/font/local to use
+  // the real thing.
+  fonts: {
+    heading: "var(--font-heading)",
+    body: "var(--font-body)",
   },
 } as const;
 

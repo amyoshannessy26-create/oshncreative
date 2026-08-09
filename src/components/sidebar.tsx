@@ -23,7 +23,7 @@ export function Sidebar({ userName, userImage }: { userName?: string | null; use
       <Link href="/dashboard" className="flex items-center gap-2 border-b border-border px-5 py-5">
         <Image src={brand.logo.src} alt={brand.logo.alt} width={brand.logo.width} height={brand.logo.height} />
         <div className="leading-tight">
-          <div className="text-sm font-semibold text-card-foreground">{brand.businessName}</div>
+          <div className="font-heading text-base font-semibold tracking-wide text-card-foreground">{brand.businessName}</div>
           <div className="text-xs text-muted-foreground">{brand.tagline}</div>
         </div>
       </Link>
