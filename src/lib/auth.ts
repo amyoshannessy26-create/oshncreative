@@ -13,6 +13,14 @@ import { prisma } from "@/lib/prisma";
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   session: { strategy: "database" },
+  debug: true,
+  logger: {
+    error(error) {
+      // Auth.js redacts error detail in its default production logs — this
+      // prints the real message/stack so it's greppable in Vercel's log search.
+      console.error("[auth:error]", error);
+    },
+  },
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
