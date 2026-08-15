@@ -12,7 +12,10 @@ with Vercel's serverless functions.
 
 1. Create a project at https://neon.tech (free tier is plenty for this).
 2. In the Neon dashboard, copy two connection strings:
-   - **Pooled connection** → `DATABASE_URL`
+   - **Pooled connection** → `DATABASE_URL` — append `&pgbouncer=true` to the
+     end of it. Without this, writes (creating a lead, task, etc.) can
+     intermittently fail with "prepared statement already exists" errors
+     under Vercel's serverless concurrency.
    - **Direct connection** (toggle "Pooled connection" off) → `DIRECT_URL`
 3. Locally: copy `.env.example` to `.env.local` and paste both in.
 4. Push the schema:
