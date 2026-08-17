@@ -40,7 +40,10 @@ export function getXeroConnectUrl(state: string, codeChallenge: string) {
     code_challenge: codeChallenge,
     code_challenge_method: "S256",
   });
-  return `${AUTHORIZE_URL}?${params.toString()}`;
+  // URLSearchParams encodes spaces as "+", but Xero's authorize endpoint
+  // expects the OAuth-standard "%20" for the space-separated scope list —
+  // otherwise it rejects the whole scope string as invalid.
+  return `${AUTHORIZE_URL}?${params.toString().replace(/\+/g, "%20")}`;
 }
 
 function basicAuthHeader() {
