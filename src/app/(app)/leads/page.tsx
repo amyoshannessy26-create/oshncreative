@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { PageHeader, Card } from "@/components/ui";
 import { createLead, deleteLead } from "@/lib/actions/leads";
-import { LeadStageSelect, LEAD_STAGE_LABELS, LEAD_STAGES } from "@/components/lead-stage-select";
+import { LeadStageSelect } from "@/components/lead-stage-select";
+import { LEAD_STAGES, LEAD_STAGE_LABELS } from "@/lib/lead-stages";
 import { DeleteButton } from "@/components/delete-button";
 
 export default async function LeadsPage() {
