@@ -29,7 +29,8 @@ export async function GET(req: NextRequest) {
 
   try {
     await saveXeroConnection(session.user.id, code, codeVerifier);
-  } catch {
+  } catch (err) {
+    console.error("[xero:callback]", err);
     return NextResponse.redirect(new URL("/settings?error=xero_token_exchange_failed", req.url));
   }
 

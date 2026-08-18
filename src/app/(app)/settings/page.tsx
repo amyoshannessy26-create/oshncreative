@@ -5,8 +5,24 @@ import { DisconnectButton } from "@/components/disconnect-button";
 import { setGoogleDriveFolder } from "@/lib/actions/integrations";
 import { format } from "date-fns";
 
-export default async function SettingsPage() {
+const ERROR_MESSAGES: Record<string, string> = {
+  google_invalid_state: "That Google connection attempt looked invalid or had expired — please try Connect Google again.",
+  google_token_exchange_failed: "Google rejected the connection attempt. Double-check the redirect URIs in Google Cloud Console match this app exactly, then try again.",
+  xero_invalid_state: "That Xero connection attempt looked invalid or had expired — please try Connect Xero again.",
+  xero_token_exchange_failed: "Xero rejected the connection attempt. Double-check the redirect URI in the Xero app settings matches this app exactly, then try again.",
+};
+
+function errorMessage(code: string): string {
+  return ERROR_MESSAGES[code] ?? `Something went wrong connecting (code: ${code}). Try again, and if it keeps happening, check the Vercel logs for details.`;
+}
+
+export default async function SettingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string; connected?: string }>;
+}) {
   const session = await auth();
+  const { error, connected } = await searchParams;
   const [google, xero] = await Promise.all([
     prisma.integrationConnection.findFirst({ where: { userId: session!.user.id, provider: "GOOGLE" } }),
     prisma.integrationConnection.findFirst({ where: { userId: session!.user.id, provider: "XERO" } }),
@@ -15,6 +31,17 @@ export default async function SettingsPage() {
   return (
     <div>
       <PageHeader title="Settings" description="Manage connected accounts and sync preferences" />
+
+      {error && (
+        <div className="mb-6 rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+          {errorMessage(error)}
+        </div>
+      )}
+      {connected && !error && (
+        <div className="mb-6 rounded-lg border border-success/30 bg-success/10 px-4 py-3 text-sm text-success">
+          {connected === "google" ? "Google" : "Xero"} connected successfully.
+        </div>
+      )}
 
       <div className="space-y-6">
         <Card>

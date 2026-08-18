@@ -27,7 +27,8 @@ export async function GET(req: NextRequest) {
 
   try {
     await saveGoogleConnection(session.user.id, code);
-  } catch {
+  } catch (err) {
+    console.error("[google:callback]", err);
     return NextResponse.redirect(new URL("/settings?error=google_token_exchange_failed", req.url));
   }
 
